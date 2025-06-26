@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.frybits.harmony.app.databinding.FragmentMainBinding
 import com.frybits.harmony.app.repository.TestRepository
+import com.frybits.harmony.app.test.DatastoreTestRunner
 import com.frybits.harmony.app.test.HarmonyTestRunner
 import com.frybits.harmony.app.test.LogEvent
 import com.frybits.harmony.app.test.MMKVTestRunner
@@ -113,6 +114,20 @@ class MainFragment : Fragment() {
                         TraySharedPrefsRunner(
                             context = requireContext(),
                             prefsName = PREFS_NAME,
+                            iterations = requireNotNull(
+                                testIterationEditText.editText?.text?.toString()?.toInt()
+                            ),
+                            isAsync = testApplySwitch.isChecked,
+                            isEncrypted = useEncryptionSwitch.isChecked
+                        )
+                    )
+                }
+
+                if (datastoreSwitch.isChecked) {
+                    runnerList.add(
+                        DatastoreTestRunner(
+                            context = requireContext(),
+//                            prefsName = PREFS_NAME,
                             iterations = requireNotNull(
                                 testIterationEditText.editText?.text?.toString()?.toInt()
                             ),

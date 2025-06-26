@@ -50,6 +50,7 @@ object TestSource {
     const val HARMONY = "harmony"
     const val MMKV = "mmkv"
     const val TRAY = "tray"
+    const val DATASTORE = "datastore"
 }
 
 sealed class TestData(

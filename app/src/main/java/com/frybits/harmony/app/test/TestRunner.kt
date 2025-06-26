@@ -20,6 +20,7 @@ import com.frybits.harmony.app.REMOTE_MESSENGER_KEY
 import com.frybits.harmony.app.RESULTS_EVENT
 import com.frybits.harmony.app.RESULTS_KEY
 import com.frybits.harmony.app.USE_ENCRYPTION_KEY
+import com.frybits.harmony.app.datastore.copy
 import com.frybits.harmony.getHarmonySharedPreferences
 import com.frybits.harmony.secure.getEncryptedHarmonySharedPreferences
 import com.tencent.mmkv.MMKV
@@ -28,6 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -92,9 +94,9 @@ sealed class TestRunner(
 
     protected abstract suspend fun awaitResults()
 
-    protected abstract fun write(key: String, value: String, isAsync: Boolean)
+    protected abstract suspend fun write(key: String, value: String, isAsync: Boolean)
 
-    protected abstract fun read(key: String)
+    protected abstract suspend fun read(key: String)
 
     suspend fun getTestResults(parentId: UUID): TestEntityWithData {
         awaitResults()
@@ -186,6 +188,59 @@ sealed class TestRunner(
     }
 }
 
+class DatastoreTestRunner(
+    context: Context,
+    iterations: Int,
+    isAsync: Boolean,
+    isEncrypted: Boolean
+) : TestRunner(
+    iterations = iterations,
+    isAsync = isAsync,
+    isEncrypted = isEncrypted
+) {
+
+    private val dataStore = MultiProcessDeviceStore.get(context)
+
+    override val source: String = TestSource.DATASTORE
+
+    override suspend fun awaitUntilReady() {
+        return
+    }
+
+    override suspend fun reset() {
+        dataStore.updateData {
+            it.copy {
+                entries.clear()
+            }
+        }
+        return
+    }
+
+    override suspend fun awaitResults() {
+        delay(3000)
+        return
+    }
+
+    override suspend fun write(key: String, value: String, isAsync: Boolean) {
+        dataStore.updateData {
+            it.copy {
+                entries[key] = value
+            }
+        }
+//            .also {
+//                println("write [$key,$value] ")
+//            }
+    }
+
+    override suspend fun read(key: String) {
+        dataStore.data.first().getEntriesOrDefault(key, "")
+//            .also {
+//                println("read [$key,$it]")
+//            }
+    }
+}
+
+
 abstract class SharedPreferencesTestRunner(
     iterations: Int,
     isAsync: Boolean,
@@ -196,7 +251,7 @@ abstract class SharedPreferencesTestRunner(
 
     protected abstract val editor: SharedPreferences.Editor
 
-    override fun write(key: String, value: String, isAsync: Boolean) {
+    override suspend fun write(key: String, value: String, isAsync: Boolean) {
         editor.putString(key, value)
         if (isAsync) {
             editor.apply()
@@ -205,7 +260,7 @@ abstract class SharedPreferencesTestRunner(
         }
     }
 
-    override fun read(key: String) {
+    override suspend fun read(key: String) {
         sharedPreferences.getString(key, null)
     }
 }
@@ -269,6 +324,7 @@ class HarmonyTestRunner(
                 }
                 runBlocking { logEvent(log) }
             }
+
             RESULTS_EVENT -> {
                 val ipcLongArray = msg.data.getLongArray(RESULTS_KEY)
                     ?: throw IllegalArgumentException("No results available")
@@ -374,7 +430,13 @@ class MMKVTestRunner(
     }
 
     private val mmkv = if (isEncrypted) {
-        requireNotNull(MMKV.mmkvWithID("$prefsName-encrypted", MMKV.MULTI_PROCESS_MODE, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)))
+        requireNotNull(
+            MMKV.mmkvWithID(
+                "$prefsName-encrypted",
+                MMKV.MULTI_PROCESS_MODE,
+                MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+            )
+        )
     } else {
         requireNotNull(MMKV.mmkvWithID(prefsName, MMKV.MULTI_PROCESS_MODE))
     }
@@ -391,6 +453,7 @@ class MMKVTestRunner(
                 }
                 runBlocking { logEvent(log) }
             }
+
             RESULTS_EVENT -> {
                 val ipcLongArray = msg.data.getLongArray(RESULTS_KEY)
                     ?: throw IllegalArgumentException("No results available")
@@ -461,11 +524,11 @@ class MMKVTestRunner(
         }
     }
 
-    override fun write(key: String, value: String, isAsync: Boolean) {
+    override suspend fun write(key: String, value: String, isAsync: Boolean) {
         mmkv.encode(key, value)
     }
 
-    override fun read(key: String) {
+    override suspend fun read(key: String) {
         mmkv.decodeString(key)
     }
 
@@ -495,6 +558,7 @@ class TraySharedPrefsRunner(
                 }
                 runBlocking { logEvent(log) }
             }
+
             RESULTS_EVENT -> {
                 val ipcLongArray = msg.data.getLongArray(RESULTS_KEY)
                     ?: throw IllegalArgumentException("No results available")
@@ -567,11 +631,11 @@ class TraySharedPrefsRunner(
         }
     }
 
-    override fun write(key: String, value: String, isAsync: Boolean) {
+    override suspend fun write(key: String, value: String, isAsync: Boolean) {
         trayPreferences.put(key, value)
     }
 
-    override fun read(key: String) {
+    override suspend fun read(key: String) {
         trayPreferences.getString(key)
     }
 

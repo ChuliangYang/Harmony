@@ -1,4 +1,6 @@
 apply plugin: 'frybits-application'
+apply plugin: 'com.google.protobuf'
+
 
 android {
     namespace 'com.frybits.harmony.app'
@@ -21,6 +23,8 @@ dependencies {
     implementation libs.kotlinx.coroutines.core
     implementation libs.kotlinx.coroutines.android
 
+
+
     // Android
     implementation libs.androidx.appcompat
     implementation libs.androidx.core.ktx
@@ -33,7 +37,25 @@ dependencies {
     ksp libs.google.dagger.hilt.compiler
     implementation libs.androidx.room.ktx
     ksp libs.androidx.room.compiler
+    implementation libs.androidx.datastore
+    implementation("com.google.protobuf:protobuf-kotlin-lite:4.31.1")   // Kotlin (optional)
 
     // Test
     implementation libs.kotlin.test.junit
 }
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:4.31.1"        // compiler version
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            // Generate lite Java + Kotlin code
+            task.builtins {
+                register("java")   { option("lite") }
+                register("kotlin") { option("lite") }
+            }
+        }
+    }
+}
+

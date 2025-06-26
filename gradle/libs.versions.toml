@@ -24,6 +24,7 @@ androidx-test-runner = "1.6.2"
 androidx-espresso-core = "3.6.1"
 androidx-espresso-remote = "3.6.1"
 androidx-test-orchestrator = "1.5.1"
+datastoreVersion = "1.1.7"
 ksp = "2.1.21-2.0.2"
 
 # Google
@@ -76,6 +77,8 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidx-crypto" }
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidx-collection" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastoreVersion" }
+
 
 # Google
 google-material = { module = "com.google.android.material:material", version.ref = "google-material" }
