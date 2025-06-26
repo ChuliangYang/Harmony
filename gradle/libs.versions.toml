@@ -6,7 +6,7 @@ kotlinx-serialization = "1.8.1"
 dokka = "2.0.0"
 
 # Android
-android-build-gradle = "8.11.0"
+android-build-gradle = "8.10.0"
 
 # Androidx
 androidx-navigation = "2.9.0"
