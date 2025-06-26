@@ -68,9 +68,9 @@ private fun TestData.toEntity(): TestDataEntity {
 
 private fun TestDataEntity.toModel(): TestData {
     return when (testDataType) {
-        com.frybits.harmony.app.test.TestType.WRITE -> WriteTestData(parentTestEntityId, results)
-        com.frybits.harmony.app.test.TestType.READ -> ReadTestData(parentTestEntityId, results)
-        com.frybits.harmony.app.test.TestType.IPC -> IpcTestData(parentTestEntityId, results)
+        TestType.WRITE -> WriteTestData(parentTestEntityId, results)
+        TestType.READ -> ReadTestData(parentTestEntityId, results)
+        TestType.IPC -> IpcTestData(parentTestEntityId, results)
         else -> throw IllegalStateException("Unknown test type")
     }
 }

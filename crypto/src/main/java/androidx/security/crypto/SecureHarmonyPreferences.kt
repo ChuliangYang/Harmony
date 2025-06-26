@@ -11,6 +11,7 @@ import com.frybits.harmony.getHarmonySharedPreferences
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.DeterministicAead
 import com.google.crypto.tink.KeysetHandle
+import com.google.crypto.tink.RegistryConfiguration
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.daead.DeterministicAeadConfig
 import com.google.crypto.tink.integration.android.HarmonyKeysetManager
@@ -347,8 +348,8 @@ internal fun SecureHarmonyPreferences(
         .withMasterKeyUri(MasterKeys.KEYSTORE_PATH_URI + masterKeyAlias)
         .build().keysetHandle
 
-    val daead: DeterministicAead = daeadKeysetHandle.getPrimitive(DeterministicAead::class.java)
-    val aead: Aead = aeadKeysetHandle.getPrimitive(Aead::class.java)
+    val daead: DeterministicAead = daeadKeysetHandle.getPrimitive(RegistryConfiguration.get(), DeterministicAead::class.java)
+    val aead: Aead = aeadKeysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
 
     return SecureHarmonyPreferencesImpl(fileName, context.getHarmonySharedPreferences(fileName), aead, daead)
 }

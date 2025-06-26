@@ -37,7 +37,6 @@ import com.google.crypto.tink.shaded.protobuf.InvalidProtocolBufferException
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.security.GeneralSecurityException
-import java.security.KeyStore
 import java.security.KeyStoreException
 import java.security.ProviderException
 
@@ -68,7 +67,6 @@ internal class HarmonyKeysetManager private constructor(builder: Builder) {
             private set
         private var useKeystore = true
         private var keyTemplate: KeyTemplate? = null
-        private var keyStore: KeyStore? = null
 
         @GuardedBy("this")
         lateinit var keysetManager: KeysetManager
@@ -118,11 +116,7 @@ internal class HarmonyKeysetManager private constructor(builder: Builder) {
         }
 
         private fun readOrGenerateNewMasterKey(): Aead? {
-            val client: AndroidKeystoreKmsClient = if (keyStore != null) {
-                AndroidKeystoreKmsClient.Builder().setKeyStore(keyStore).build()
-            } else {
-                AndroidKeystoreKmsClient()
-            }
+            val client = AndroidKeystoreKmsClient()
             val existed = client.hasKey(masterKeyUri)
             if (!existed) {
                 try {
