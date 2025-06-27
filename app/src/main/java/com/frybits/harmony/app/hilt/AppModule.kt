@@ -15,6 +15,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.io.File
+import javax.inject.Singleton
 
 /*
  *  Copyright 2021 Pablo Baxter
@@ -50,6 +51,7 @@ object AppModule {
     }
 
     @Provides
+    @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return MultiProcessDataStoreFactory.create(
             serializer = PreferencesFileSerializer,

@@ -184,7 +184,7 @@
             app:layout_constraintEnd_toStartOf="@+id/isEncryptedCheckBox"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/trayTextView" />
+            app:layout_constraintTop_toBottomOf="@id/dataStoreTextView" />
 
         <CheckBox
             android:id="@+id/isEncryptedCheckBox"
@@ -205,7 +205,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:text="Tray"
-            app:layout_constraintBottom_toTopOf="@id/isAsyncCheckBox"
+            app:layout_constraintBottom_toTopOf="@id/dataStoreTextView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/mmkvTextView" />
 
@@ -238,6 +238,47 @@
             app:layout_constraintEnd_toEndOf="@+id/ipcTextView"
             app:layout_constraintStart_toStartOf="@+id/ipcTextView"
             app:layout_constraintTop_toTopOf="@+id/trayTextView" />
+
+        <TextView
+            android:id="@+id/dataStoreTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="DataStore"
+            app:layout_constraintBottom_toTopOf="@id/isAsyncCheckBox"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/trayTextView" />
+
+        <TextView
+            android:id="@+id/dataStoreReadTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            app:layout_constraintBottom_toBottomOf="@+id/dataStoreTextView"
+            app:layout_constraintEnd_toEndOf="@+id/readTextView"
+            app:layout_constraintStart_toStartOf="@+id/readTextView"
+            app:layout_constraintTop_toTopOf="@+id/dataStoreTextView" />
+
+        <TextView
+            android:id="@+id/dataStoreWriteTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            app:layout_constraintBottom_toBottomOf="@+id/dataStoreTextView"
+            app:layout_constraintEnd_toEndOf="@+id/writeTextView"
+            app:layout_constraintStart_toStartOf="@+id/writeTextView"
+            app:layout_constraintTop_toTopOf="@+id/dataStoreTextView" />
+
+        <TextView
+            android:id="@+id/dataStoreIpcTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            app:layout_constraintBottom_toBottomOf="@+id/dataStoreTextView"
+            app:layout_constraintEnd_toEndOf="@+id/ipcTextView"
+            app:layout_constraintStart_toStartOf="@+id/ipcTextView"
+            app:layout_constraintTop_toTopOf="@+id/dataStoreTextView" />
 
         <TextView
             android:id="@+id/numTestsTextView"

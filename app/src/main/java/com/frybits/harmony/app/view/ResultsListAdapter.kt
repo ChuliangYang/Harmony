@@ -59,10 +59,12 @@ class ResultsViewHolder(private val binderView: ViewResultBinding) : RecyclerVie
         val harmonyTests = testSuiteData.getTestData(TestSource.HARMONY)
         val mmkvTests = testSuiteData.getTestData(TestSource.MMKV)
         val trayTests = testSuiteData.getTestData(TestSource.TRAY)
+        val dataStoreTests = testSuiteData.getTestData(TestSource.DATASTORE)
         with(binderView) {
-            var max = maxOf(sharedPrefsTests.filter { it.testDataType == TestType.READ }.count(), harmonyTests.filter { it.testDataType == TestType.READ }.count())
-            max = maxOf(max, mmkvTests.filter { it.testDataType == TestType.READ }.count())
-            max = maxOf(max, trayTests.filter { it.testDataType == TestType.READ }.count())
+            var max = maxOf(sharedPrefsTests.count { it.testDataType == TestType.READ }, harmonyTests.count { it.testDataType == TestType.READ })
+            max = maxOf(max, mmkvTests.count { it.testDataType == TestType.READ })
+            max = maxOf(max, trayTests.count { it.testDataType == TestType.READ })
+            max = maxOf(max, dataStoreTests.count { it.testDataType == TestType.READ })
             numTestsTextView.text = "Number of runs: $max"
 
             itemsStoredTextView.text = "Items stored per run: ${testSuiteData.testEntityWithDataList.first().entity.numIterations}"
@@ -82,6 +84,10 @@ class ResultsViewHolder(private val binderView: ViewResultBinding) : RecyclerVie
             trayReadTextView.text = trayTests.evaluateTime(TestType.READ)
             trayWriteTextView.text = trayTests.evaluateTime(TestType.WRITE)
             trayIpcTextView.text = trayTests.evaluateTime(TestType.IPC)
+
+            dataStoreReadTextView.text = dataStoreTests.evaluateTime(TestType.READ)
+            dataStoreWriteTextView.text = dataStoreTests.evaluateTime(TestType.WRITE)
+            dataStoreIpcTextView.text = dataStoreTests.evaluateTime(TestType.IPC)
 
             isAsyncCheckBox.isChecked = testSuiteData.testEntityWithDataList.first().entity.isAsync
             isEncryptedCheckBox.isChecked = testSuiteData.testEntityWithDataList.first().entity.isEncrypted
