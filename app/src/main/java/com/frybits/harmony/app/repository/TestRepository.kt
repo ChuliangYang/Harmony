@@ -31,7 +31,7 @@ import javax.inject.Singleton
 @Singleton
 class TestRepository @Inject constructor(
     private val harmonyDatabase: HarmonyDatabase
-    ) {
+) {
 
     private val testDao = harmonyDatabase.getTestDao()
 

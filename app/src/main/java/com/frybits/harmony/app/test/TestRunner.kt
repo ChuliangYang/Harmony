@@ -9,6 +9,10 @@ import android.os.Messenger
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.content.edit
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.frybits.harmony.app.ACK_EVENT
@@ -20,7 +24,6 @@ import com.frybits.harmony.app.REMOTE_MESSENGER_KEY
 import com.frybits.harmony.app.RESULTS_EVENT
 import com.frybits.harmony.app.RESULTS_KEY
 import com.frybits.harmony.app.USE_ENCRYPTION_KEY
-import com.frybits.harmony.app.datastore.copy
 import com.frybits.harmony.getHarmonySharedPreferences
 import com.frybits.harmony.secure.getEncryptedHarmonySharedPreferences
 import com.tencent.mmkv.MMKV
@@ -29,7 +32,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -189,54 +191,114 @@ sealed class TestRunner(
 }
 
 class DatastoreTestRunner(
-    context: Context,
-    iterations: Int,
+    private val context: Context,
+    private val iterations: Int,
     isAsync: Boolean,
-    isEncrypted: Boolean
+    isEncrypted: Boolean,
+    private val dataStore: DataStore<Preferences>
 ) : TestRunner(
     iterations = iterations,
     isAsync = isAsync,
     isEncrypted = isEncrypted
 ) {
 
-    private val dataStore = MultiProcessDeviceStore.get(context)
+    private val isReadyIndicator = Mutex(true)
+    private val gotResultsIndicator = Mutex(true)
+    private val incomingMessenger = Messenger(Handler(Looper.getMainLooper()) { msg ->
+        when (msg.what) {
+            ACK_EVENT -> isReadyIndicator.unlock()
+            LOG_EVENT -> {
+                val log = msg.data.let {
+                    it.classLoader = LogEvent::class.java.classLoader
+                    return@let it.getParcelable<LogEvent>(LOG_KEY) ?: return@Handler true
+                }
+                runBlocking { logEvent(log) }
+            }
+
+            RESULTS_EVENT -> {
+                val ipcLongArray = msg.data.getLongArray(RESULTS_KEY)
+                    ?: throw IllegalArgumentException("No results available")
+                if (ipcLongArray.any { it == -1L }) {
+                    runBlocking {
+                        logEvent(Log.ERROR, LOG_TAG, "IPC did not set all data")
+                    }
+                }
+                testData.add(
+                    IpcTestData(
+                        parentTestEntityId = testRunnerId,
+                        results = ipcLongArray
+                    )
+                )
+                runBlocking {
+                    logEvent(
+                        LogEvent(
+                            priority = Log.INFO,
+                            tag = LOG_TAG,
+                            message = "avg ipc: ${ipcLongArray.average() / 1_000_000} ms"
+                        )
+                    )
+                }
+                gotResultsIndicator.unlock()
+            }
+        }
+        return@Handler true
+    })
 
     override val source: String = TestSource.DATASTORE
 
     override suspend fun awaitUntilReady() {
-        return
+        delay(1000) // Prevent thrashing of the service
+        context.startService(Intent(context, DataStoreRemoteTestRunnerService::class.java).apply {
+            putExtra(ITERATIONS_KEY, iterations)
+            putExtra(REMOTE_MESSENGER_KEY, incomingMessenger)
+        })
+        isReadyIndicator.withLock {
+            logEvent(Log.INFO, LOG_TAG, "datastore is ready")
+        }
     }
 
     override suspend fun reset() {
-        dataStore.updateData {
-            it.copy {
-                entries.clear()
-            }
+        try {
+            isReadyIndicator.unlock()
+        } catch (e: IllegalStateException) {
+        } finally {
+            isReadyIndicator.lock()
         }
-        return
+
+        try {
+            gotResultsIndicator.unlock()
+        } catch (e: IllegalStateException) {
+        } finally {
+            gotResultsIndicator.lock()
+        }
+
+        dataStore.edit { settings ->
+            settings.clear()
+        }
     }
 
     override suspend fun awaitResults() {
-        delay(3000)
-        return
+        delay(3000) // Give time for results to populate on other process
+        context.stopService(Intent(context, DataStoreRemoteTestRunnerService::class.java))
+        gotResultsIndicator.withLock {
+            logEvent(Log.INFO, LOG_TAG, "got all datastore results")
+        }
     }
 
     override suspend fun write(key: String, value: String, isAsync: Boolean) {
-        dataStore.updateData {
-            it.copy {
-                entries[key] = value
-            }
+        dataStore.edit {
+            it[stringPreferencesKey(key)] = value
         }
-//            .also {
-//                println("write [$key,$value] ")
-//            }
     }
 
     override suspend fun read(key: String) {
-        dataStore.data.first().getEntriesOrDefault(key, "")
-//            .also {
-//                println("read [$key,$it]")
-//            }
+        dataStore.edit {
+            it[stringPreferencesKey(key)]
+        }
+    }
+
+    companion object {
+        private const val LOG_TAG = "DataStoreRunner"
     }
 }
 

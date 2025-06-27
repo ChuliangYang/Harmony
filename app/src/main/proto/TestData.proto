@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-option java_package = "com.frybits.harmony.app.datastore";
-option java_multiple_files = true;
-
-message TestKvData {
-    map<string,string> entries = 1;
-}

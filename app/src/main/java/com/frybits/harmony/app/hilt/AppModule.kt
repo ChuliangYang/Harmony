@@ -1,6 +1,11 @@
 package com.frybits.harmony.app.hilt
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.MultiProcessDataStoreFactory
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferencesFileSerializer
 import androidx.room.Room
 import com.frybits.harmony.app.database.HarmonyDatabase
 import com.frybits.harmony.app.database.TestDao
@@ -9,6 +14,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.io.File
 
 /*
  *  Copyright 2021 Pablo Baxter
@@ -41,5 +47,14 @@ object AppModule {
     @Provides
     fun provideTestDao(harmonyDatabase: HarmonyDatabase): TestDao {
         return harmonyDatabase.getTestDao()
+    }
+
+    @Provides
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return MultiProcessDataStoreFactory.create(
+            serializer = PreferencesFileSerializer,
+            corruptionHandler = ReplaceFileCorruptionHandler { PreferencesFileSerializer.defaultValue },
+            produceFile = { File(context.filesDir, "device_info.ds") }
+        )
     }
 }

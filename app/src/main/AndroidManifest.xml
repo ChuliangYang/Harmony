@@ -28,6 +28,9 @@
         <service android:name=".test.TrayRemoteTestRunnerService"
             android:process=":remote"/>
 
+        <service android:name=".test.DataStoreRemoteTestRunnerService"
+            android:process=":remote"/>
+
         <service
             android:name=".ClearDataApplyService"
             android:exported="true"

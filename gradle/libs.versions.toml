@@ -24,7 +24,7 @@ androidx-test-runner = "1.6.2"
 androidx-espresso-core = "3.6.1"
 androidx-espresso-remote = "3.6.1"
 androidx-test-orchestrator = "1.5.1"
-datastoreVersion = "1.1.7"
+datastoreVersion = "1.2.0-alpha02"
 ksp = "2.1.21-2.0.2"
 
 # Google
@@ -38,6 +38,7 @@ hilt = "2.56.2"
 mmkv = "2.2.2"
 
 dependency-analysis = "2.19.0"
+protobufKotlinLite = "4.31.1"
 vanniktech = "0.33.0"
 
 [libraries]
@@ -51,6 +52,7 @@ hilt-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version
 kotlin-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 kotlin-serialization-plugin = { module = "org.jetbrains.kotlin:kotlin-serialization", version.prefer = "kotlin" }
 ## Publishing
+protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobufKotlinLite" }
 vanniktech = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktech" }
 
 ## Project libraries
@@ -78,6 +80,7 @@ androidx-annotation = { module = "androidx.annotation:annotation", version.ref =
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidx-crypto" }
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidx-collection" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastoreVersion" }
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core-android", version.ref = "datastoreVersion" }
 
 
 # Google

@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -51,6 +53,9 @@ class MainFragment : Fragment() {
 
     @Inject
     lateinit var testRepository: TestRepository
+
+    @Inject
+    lateinit var dataStore: DataStore<Preferences>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -132,7 +137,8 @@ class MainFragment : Fragment() {
                                 testIterationEditText.editText?.text?.toString()?.toInt()
                             ),
                             isAsync = testApplySwitch.isChecked,
-                            isEncrypted = useEncryptionSwitch.isChecked
+                            isEncrypted = useEncryptionSwitch.isChecked,
+                            dataStore = dataStore
                         )
                     )
                 }
@@ -183,5 +189,6 @@ class MainFragment : Fragment() {
         traySwitch.isEnabled = isEnabled
         startTestButton.isEnabled = isEnabled
         viewResultsButton.isEnabled = isEnabled
+        datastoreSwitch.isEnabled = isEnabled
     }
 }
