@@ -52,14 +52,14 @@ class DataStoreRemoteTestRunnerService : Service() {
             throw IllegalStateException("Service should not be started more than once!")
         }
         intent?.extras?.let { bundle ->
-            var lastReadKey = 0
+            var nextToRead = 0
             currJob = serviceScope.launch {
                 dataStore.data.collect { prefs ->
                     val prefsMap = prefs.asMap()
                     val size = prefsMap.size
                     val now = SystemClock.elapsedRealtimeNanos()
-                    if (size > lastReadKey) {
-                        for (readKey in lastReadKey until size) {
+                    if (size > nextToRead) {
+                        for (readKey in nextToRead until size) {
                             val newKey = intToStringMap[readKey] ?: run {
                                 remoteMessenger.send(Message.obtain().apply {
                                     what = LOG_EVENT
@@ -115,7 +115,7 @@ class DataStoreRemoteTestRunnerService : Service() {
                             }
                             timeCaptureMap[newKeyInt] = diff
                         }
-                        lastReadKey = size - 1
+                        nextToRead = size
                     }
                 }
             }
